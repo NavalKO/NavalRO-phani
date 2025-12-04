@@ -1,0 +1,5 @@
+{
+  "name": "RAG JSON Generator",
+  "description": "A RAG-workflow tool that intakes transcripts and schemas to generate structured JSON based on user use-cases using Gemini 2.5.",
+  "requestFramePermissions": []
+}
