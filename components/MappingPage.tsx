@@ -28,7 +28,7 @@ const AVAILABLE_VEHICLE_FIELDS = [
 // Config & Types
 // ----------------------------------------------------------------------
 const URL_GET_MAPPING = "https://wbdemo.shipsy.io/webhook/get-scenario-mapping";
-const URL_SAVE_MAPPING = "/api/shipsy/webhook/save-mapping";
+const URL_SAVE_MAPPING = "https://shipsy-subs.app.n8n.cloud/webhook-test/webhook-path";
 
 type MappingData = Record<string, string>;
 
