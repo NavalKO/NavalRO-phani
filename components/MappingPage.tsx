@@ -218,7 +218,7 @@ export const MappingPage: React.FC = () => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] sticky top-0 z-10 border-b">
               <tr>
-                <th className="px-6 py-4 text-left w-1/2">Shipsy Target Field</th>
+                <th className="px-6 py-4 text-left w-1/2">Shipsy Field</th>
                 <th className="px-6 py-4 text-left border-l border-slate-200">Excel Header (Input Source)</th>
                 <th className="w-12"></th>
               </tr>
