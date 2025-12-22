@@ -29,7 +29,7 @@ const AVAILABLE_VEHICLE_FIELDS = [
 // Config & Types
 // ----------------------------------------------------------------------
 const URL_GET_MAPPING = "https://wbdemo.shipsy.io/webhook/get-scenario-mapping";
-const URL_SAVE_MAPPING = "https://shipsy-subs.app.n8n.cloud/webhook/webhook-path";
+const URL_SAVE_MAPPING = "https://wbdemo.shipsy.io/webhook/save-mappings";
 const URL_GET_HEADERS = "https://wbdemo.shipsy.io/webhook/get-scenario-raw-file-headers";
 
 // Mapping state: { [SystemField]: ExcelHeader }
