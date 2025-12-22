@@ -29,7 +29,7 @@ const AVAILABLE_VEHICLE_FIELDS = [
 // Config & Types
 // ----------------------------------------------------------------------
 const URL_GET_MAPPING = "https://wbdemo.shipsy.io/webhook/get-scenario-mapping";
-const URL_SAVE_MAPPING = "https://wbdemo.shipsy.io/webhook/save-mappings";
+const URL_SAVE_MAPPING = "https://shipsy-subs.app.n8n.cloud/webhook/webhook-path";
 const URL_GET_HEADERS = "https://wbdemo.shipsy.io/webhook/get-scenario-raw-file-headers";
 
 // Mapping state: { [SystemField]: ExcelHeader }
@@ -114,7 +114,7 @@ export const MappingPage: React.FC = () => {
         body: JSON.stringify({ scenario_name: scenarioName })
       });
       
-      // 2. Fetch raw file headers (Using user-specified sceanrio_name typo)
+      // 2. Fetch raw file headers
       const resHeaders = await fetch(URL_GET_HEADERS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,6 +179,20 @@ export const MappingPage: React.FC = () => {
     }
   };
 
+  // NEW: Update the System Field (Key) for an existing mapping
+  const updateSystemFieldKey = (type: 'vehicle' | 'consignment', oldSystemField: string, newSystemField: string) => {
+    if (oldSystemField === newSystemField) return;
+    const setMapping = type === 'vehicle' ? setVehicleMapping : setConsignmentMapping;
+    
+    setMapping(prev => {
+      const next = { ...prev };
+      const excelValue = next[oldSystemField];
+      delete next[oldSystemField];
+      next[newSystemField] = excelValue;
+      return next;
+    });
+  };
+
   const removeMappingRow = (type: 'vehicle' | 'consignment', systemField: string) => {
     if (type === 'vehicle') {
       const next = { ...vehicleMapping }; delete next[systemField]; setVehicleMapping(next);
@@ -218,7 +232,7 @@ export const MappingPage: React.FC = () => {
           <table className="w-full text-sm">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] sticky top-0 z-10 border-b">
               <tr>
-                <th className="px-6 py-4 text-left w-1/2">Shipsy Field</th>
+                <th className="px-6 py-4 text-left w-1/2">System Target Field</th>
                 <th className="px-6 py-4 text-left border-l border-slate-200">Excel Header (Input Source)</th>
                 <th className="w-12"></th>
               </tr>
@@ -229,7 +243,27 @@ export const MappingPage: React.FC = () => {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <LayoutList className="w-3.5 h-3.5 text-slate-300" />
-                      <code className={`font-mono text-xs text-${themeColor}-700 font-bold`}>{systemField}</code>
+                      <div className="relative flex-1">
+                        <select
+                          value={systemField}
+                          onChange={(e) => updateSystemFieldKey(type, systemField, e.target.value)}
+                          className={`w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-${themeColor}-700 font-mono text-xs font-bold focus:ring-2 focus:ring-${themeColor}-500/20 focus:border-${themeColor}-500 appearance-none outline-none transition-all cursor-pointer shadow-sm`}
+                        >
+                          {/* System Target Field Dropdown based on AVAILABLE_..._FIELDS */}
+                          {availableSystemFields.map(f => {
+                            const isUsed = !!mapping[f] && f !== systemField;
+                            return (
+                              <option key={f} value={f} className={isUsed ? 'text-slate-300' : ''}>
+                                {f} {isUsed ? '(Mapped)' : ''}
+                              </option>
+                            );
+                          })}
+                          {!availableSystemFields.includes(systemField) && (
+                            <option value={systemField}>{systemField} (Custom)</option>
+                          )}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-2.5 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 border-l border-slate-100">
@@ -241,12 +275,12 @@ export const MappingPage: React.FC = () => {
                           onChange={(e) => updateMappingValue(type, systemField, e.target.value)}
                           className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-slate-800 text-xs font-semibold focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 appearance-none outline-none transition-all cursor-pointer shadow-sm"
                         >
-                          {/* Populate Excel Header dropdown from Webhook data */}
+                          {/* Excel Header Dropdown based on Webhook Data */}
                           {fileHeaders.map(h => (
                             <option key={h} value={h}>{h}</option>
                           ))}
                           {!fileHeaders.includes(currentExcelHeader) && (
-                            <option value={currentExcelHeader}>{currentExcelHeader} (Not Found in File)</option>
+                            <option value={currentExcelHeader}>{currentExcelHeader} (Not Found)</option>
                           )}
                         </select>
                         <ChevronDown className="absolute right-3 top-2.5 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
@@ -275,7 +309,6 @@ export const MappingPage: React.FC = () => {
                         className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-600 outline-none focus:border-indigo-500 appearance-none"
                       >
                         <option value="">+ Choose System Field</option>
-                        {/* Populate System Field dropdown from hardcoded AVAILABLE_..._FIELDS */}
                         {unusedSystem.map(f => (
                           <option key={f} value={f}>{f}</option>
                         ))}
@@ -293,7 +326,6 @@ export const MappingPage: React.FC = () => {
                           className={`w-full bg-white border border-${themeColor}-200 rounded-lg px-3 py-2 text-xs font-bold text-${themeColor}-900 outline-none appearance-none`}
                         >
                           <option value="">Choose Raw Column...</option>
-                          {/* Populate Excel Header dropdown from Webhook data */}
                           {fileHeaders.map(h => (
                             <option key={h} value={h}>{h}</option>
                           ))}
