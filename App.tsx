@@ -69,40 +69,31 @@ const App: React.FC = () => {
 
     // 3. Start Background Chain (Fire & Forget)
     try {
-      // Step A: Upload
-      await runWebhookStep(
-        "https://wbdemo.shipsy.io/webhook/poc-scenario-intake", 
+      const firstWebhookResponse = await runWebhookStep(
+        "https://wbdemo.shipsy.io/webhook/poc-scenario-intake", //intake completed (step 1)
         formData, 
         "Uploading Files...", 
         false
       );
-
-      await runDelay(30, "Mappings");
-
-      // Step B: Mapping
-      await runWebhookStep(
-        "https://wbdemo.shipsy.io/webhook/mapping", 
+      if(firstWebhookResponse && firstWebhookResponse.status == 200){
+        const secondWebhookresponse = await runWebhookStep(
+        "https://wbdemo.shipsy.io/webhook/mapping", //mapping fetched (step 2)
         { scenario_name: scenarioName }, 
         "Generating Mappings..."
       );
-
-      await runDelay(30, "Vehicle Normalization");
-
-      // Step C: Normalize VH
-      await runWebhookStep(
-        "https://wbdemo.shipsy.io/webhook/normalizevh", 
-        { scenario_name: scenarioName }, 
-        "Normalizing Vehicles..."
-      );
-
-      await runDelay(30, "Consignment Normalization");
-
-      // Step D: Normalize CN
-      await runWebhookStep(
-        "https://wbdemo.shipsy.io/webhook/normalizecn", 
-        { scenario_name: scenarioName }, 
-        "Normalizing Consignments..."
-      );
+       if(secondWebhookresponse && secondWebhookresponse.status == 200){
+        const thirdWebhookResponse = await runWebhookStep(
+          "https://wbdemo.shipsy.io/webhook/normalizevh", //vehicles normalized
+          { scenario_name: scenarioName },
+          "Normalizing Vehicles..."
+        )
+              if(thirdWebhookResponse && thirdWebhookResponse.status == 200){
+          const fourthWebhookResponse = await runWebhookStep(
+            "https://wbdemo.shipsy.io/webhook/normalizecn",  //consignments normalized
+            { scenario_name: scenarioName },
+            "Normalizing Consignments..."
+          )}  } 
+      }
 
       setIntakeStatus('COMPLETED');
       setIntakeStage('All data processed successfully.');
